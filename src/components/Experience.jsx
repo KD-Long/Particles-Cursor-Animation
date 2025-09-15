@@ -73,15 +73,19 @@ const Experience = ({ onCanvasCoordsChange, canvas2DRef }) => {
     )
     extend({ MyShaderMaterial: MyShaderMaterial })
 
-    const handleMouseMove = (event) => {
+    const handlePointerMove = (event) => {
         const x = (event.clientX / size.width) * 2 - 1
         const y = -(event.clientY / size.height) * 2 + 1
         setMouse(new THREE.Vector2(x, y))
     }
 
     useEffect(() => {
-        window.addEventListener('mousemove', handleMouseMove)
-        return () => window.removeEventListener('mousemove', handleMouseMove)
+        // note pointermove is more accurate than mousemove and works on touch devices
+        window.addEventListener('pointermove', handlePointerMove)
+        
+        return () => {
+            window.removeEventListener('pointermove', handlePointerMove)
+        }
     }, [size.width, size.height])
 
     // Update resolution when window size changes
@@ -145,10 +149,10 @@ const Experience = ({ onCanvasCoordsChange, canvas2DRef }) => {
     return (<>
         {/* Note this seems to be preventing right clicking to open the context menu on the browser (e.g inspect element ) */}
         <Perf position="top-right" />
-        <OrbitControls
+        {/* <OrbitControls
             makeDefault
             enableDamping={true}
-        />
+        /> */}
         <color args={['#181818']} attach='background' />
         {/* <color args={['#fdf000']} attach='background' /> */}
 
