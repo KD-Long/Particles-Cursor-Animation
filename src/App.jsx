@@ -17,7 +17,7 @@ function App() {
   return (
     <>
       <Canvas
-        // not this fixes the tone mapping (colors look better)
+        // note this fixes the tone mapping (colors look better)
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.NoToneMapping
           gl.outputEncoding = THREE.sRGBEncoding
@@ -33,7 +33,7 @@ function App() {
       >
         <Experience
           onCanvasCoordsChange={setCanvasCoords}
-          canvas2DRef={canvas2DRef} // parsing the ref to the child component
+          canvas2DRef={canvas2DRef} // passing the ref to the child component
         />
 
 

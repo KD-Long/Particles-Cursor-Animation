@@ -14,6 +14,7 @@ const Canvas2D = forwardRef(({ canvasCoords }, ref) => {
 
     const canvasSize = 128
     const glowSize = canvasSize * 0.25
+    const [prevCoords, setPrevCoords] = useState(null)
 
 
     // load glow image and set black background of canvas with rect
@@ -23,6 +24,7 @@ const Canvas2D = forwardRef(({ canvasCoords }, ref) => {
 
         ctx.fillRect(0, 0, canvasSize, canvasSize)
         ctx.fillStyle = 'black'
+        // ctx.fillStyle = 'white'
 
         // NOTE: this is important to do inside useEffect otherwise the image will not be loaded
         // Create and load image inside useEffect
@@ -48,23 +50,33 @@ const Canvas2D = forwardRef(({ canvasCoords }, ref) => {
     }, [])
 
     useEffect(() => {
-        // console.log('enter use effect coords')
-
+        // Calculate Alfa based on cursor distance from previous position
+        // remember this is on the redraw of the new opaque black canvas
+        let alpha = 1 // if coords are undefined
+        if (canvasCoords && prevCoords) {
+            const distance = Math.sqrt(
+                (canvasCoords.x - prevCoords.x) ** 2 +
+                (canvasCoords.y - prevCoords.y) ** 2
+            )
+            // This controls how fast the glow fades
+            // hence how fast the particles fade/animate back to rest
+            alpha = Math.min(1, distance * 20)
+        }
 
         const canvas = canvas2DRef.current
         let ctx = canvas.getContext('2d')
 
-        // console.log('canvasCoords', canvasCoords)
 
         if (ctx && glowImg) {
             // fade previous rend er by drawing black rect over the top (low opacity)
             ctx.globalCompositeOperation = 'source-over' // this is default rendering on top of existing
             ctx.fillStyle = 'black'
+            // ctx.fillStyle = 'white'
             ctx.globalAlpha = 0.02
             ctx.fillRect(0, 0, canvasSize, canvasSize)
             // note there is a shadowing effect here which is not ideal 
             // its a precision issue with canvas where its close to 0 (black) but it wont got to 0 cos the increment is too small
-            ctx.globalAlpha = 1 // change opacity back so new glow renders right
+            ctx.globalAlpha = alpha // change opacity back so new glow renders right
 
             // The 'lighten' blend mode compares each pixel of the new drawing with 
             // the corresponding pixel already on the canvas and keeps the lighter of the two values
@@ -76,6 +88,11 @@ const Canvas2D = forwardRef(({ canvasCoords }, ref) => {
             let targetY = canvasSize - canvasCoords.y * canvasSize - glowSize / 2
             ctx.drawImage(glowImg, targetX, targetY, glowSize, glowSize)
         }
+
+
+
+        // update previous coords state at the end (so when its called again the prev will have the old coords)
+        setPrevCoords(canvasCoords)
     }, [canvasCoords, glowImg])
 
 
@@ -103,7 +120,8 @@ const Canvas2D = forwardRef(({ canvasCoords }, ref) => {
                 left: 0,
                 width: '256px', // stretching the canvas (num pixels stay the same)
                 height: '256px',
-                zIndex: 10
+                zIndex: 10,
+                // visibility: 'hidden'
             }}
         ></canvas>
 
